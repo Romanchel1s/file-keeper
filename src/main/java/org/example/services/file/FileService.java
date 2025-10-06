@@ -19,10 +19,11 @@ public class FileService implements IFileService {
     }
 
     @Override
-    public Path getFileIfValid(String id, String token) {
+    public Path getFileIfValid(String id) {
         FileInfo info = files.get(id);
         if (info != null) {
             info.lastDownloadedAt = System.currentTimeMillis();
+            info.incrementDownloads();
             return Path.of(info.path);
         }
         return null;
@@ -50,6 +51,16 @@ public class FileService implements IFileService {
         }
     }
 
+    @Override
+    public Map<String, Integer> getDownloadStats() {
+        Map<String, Integer> stats = new HashMap<>();
+        for (Map.Entry<String, FileInfo> entry : files.entrySet()) {
+            FileInfo info = entry.getValue();
+            stats.put(info.name, info.getDownloads());
+        }
+        return stats;
+    }
+
     private String saveFile(InputStream input) throws IOException {
         Files.createDirectories(Path.of("uploads"));
         String name = "file_" + UUID.randomUUID();
@@ -66,6 +77,7 @@ public class FileService implements IFileService {
     }
 
     private String generateDownloadLink(String filename) {
+        // В идеале брать базовый URL из env
         return "http://localhost:8080/download?id=" + filename;
     }
 

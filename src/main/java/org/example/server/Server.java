@@ -34,6 +34,7 @@ public class Server {
         server.createContext("/login", wrapper.requirePost(authController::handle));
         server.createContext("/upload", wrapper.requirePostAndAuth(fileController::handle));
         server.createContext("/download", wrapper.requireGet(fileController::handle));
+        server.createContext("/stats", wrapper.requireGet(fileController::handle));
 
         server.setExecutor(Executors.newFixedThreadPool(8));
         server.start();

@@ -1,5 +1,6 @@
 package org.example.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -31,6 +32,8 @@ public class FileController implements HttpHandler {
                 handleUpload(exchange);
             } else if ("/download".equals(path)) {
                 handleDownload(exchange);
+            } else if ("/stats".equals(path)) {
+                handleGetStats(exchange);
             } else {
                 sendJson(exchange, 404, "{\"error\":\"Not found\"}");
             }
@@ -45,17 +48,27 @@ public class FileController implements HttpHandler {
         sendJson(exchange, 200, json);
     }
 
+    private void handleGetStats(HttpExchange exchange) throws IOException {
+        try {
+            Map<String, Integer> stats = fileService.getDownloadStats();
+            String json = mapper.writeValueAsString(stats);
+            sendJson(exchange, 200, json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            sendJson(exchange, 500, "{\"error\":\"Failed to serialize stats\"}");
+        }
+    }
+
     private void handleDownload(HttpExchange exchange) throws IOException {
         Map<String, String> params = parseQuery(exchange.getRequestURI().getQuery());
         String id = params.get("id");
-        String token = params.get("token");
 
-        if (id == null || token == null) {
+        if (id == null) {
             sendJson(exchange, 400, "{\"error\":\"Missing parameters\"}");
             return;
         }
 
-        Path file = fileService.getFileIfValid(id, token);
+        Path file = fileService.getFileIfValid(id);
         if (file == null) {
             sendJson(exchange, 404, "{\"error\":\"File not found or token expired\"}");
             return;

@@ -5,6 +5,7 @@ import org.example.models.FileInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Map;
 
 public interface IFileService {
 
@@ -22,7 +23,13 @@ public interface IFileService {
      * @param token токен (если используется, иначе можно игнорировать)
      * @return Path к файлу, или null если файл не найден
      */
-    Path getFileIfValid(String id, String token);
+    Path getFileIfValid(String id);
+
+    /**
+     * Возвращает статистику скачиваний всех файлов.
+     * @return Map где ключ — имя файла, значение — количество скачиваний
+     */
+    Map<String, Integer> getDownloadStats();
 
     /**
      * Удаляет устаревшие файлы (например, старше 30 дней).
