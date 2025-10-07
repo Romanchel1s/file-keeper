@@ -12,30 +12,30 @@ import java.util.Map;
 
 public class HttpUtils {
     public static void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
-        byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
-        exchange.sendResponseHeaders(statusCode, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
+        try {
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+            exchange.sendResponseHeaders(statusCode, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        } finally {
+            exchange.close();
         }
     }
 
     public static void sendFile(HttpExchange exchange, Path path) throws IOException {
-        exchange.getResponseHeaders().set("Content-Type", "application/octet-stream");
-        exchange.sendResponseHeaders(200, Files.size(path));
-        try (OutputStream os = exchange.getResponseBody()) {
-            Files.copy(path, os);
+        try {
+            exchange.getResponseHeaders().set("Content-Type", "application/octet-stream");
+            exchange.sendResponseHeaders(200, Files.size(path));
+            try (OutputStream os = exchange.getResponseBody()) {
+                Files.copy(path, os);
+            }
+        } finally {
+            exchange.close();
         }
     }
 
-    public static void sendText(HttpExchange exchange, int statusCode, String text) throws IOException {
-        byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
-        exchange.sendResponseHeaders(statusCode, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
-        }
-    }
 
     public static void sendInternalError(HttpExchange exchange, Exception e) {
         try {
